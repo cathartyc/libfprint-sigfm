@@ -1243,7 +1243,7 @@ do_verify_stop (FpDevice *dev, FpiMatchResult res, GError *error)
   FpiSsm *ssm = deinitsm_new (dev, data);
 
   /* Report the error immediately if possible, otherwise delay it. */
-  if (error && error->domain == FP_DEVICE_RETRY)
+  if (!error || error->domain == FP_DEVICE_RETRY)
     fpi_device_verify_report (dev, res, NULL, error);
   else
     data->error = error;
@@ -1295,7 +1295,7 @@ verify_start_sm_run_state (FpiSsm *ssm, FpDevice *dev)
       memcpy (msg, verify_hdr, sizeof (verify_hdr));
       memcpy (msg + sizeof (verify_hdr), data, data_len);
 
-      transfer = alloc_send_cmd28_transfer (dev, 0x03, data, data_len);
+      transfer = alloc_send_cmd28_transfer (dev, 0x03, msg, msg_len);
 
       g_free (msg);
 
