@@ -1341,7 +1341,6 @@ v_handle_resp00 (FpDevice *dev, unsigned char *data,
       fp_dbg ("good image");
       break;
 
-    case 0x1c:     /* FIXME what does this one mean? */
     case 0x0b:     /* FIXME what does this one mean? */
     case 0x23:     /* FIXME what does this one mean? */
       error = fpi_device_retry_new (FP_DEVICE_RETRY_GENERAL);
@@ -1349,6 +1348,14 @@ v_handle_resp00 (FpDevice *dev, unsigned char *data,
 
     case 0x0f:     /* scan taking too long, remove finger and try again */
       error = fpi_device_retry_new (FP_DEVICE_RETRY_REMOVE_FINGER);
+      break;
+
+    case 0x1c:     /* swipe too fast */
+      error = fpi_device_retry_new (FP_DEVICE_RETRY_TOO_FAST);
+      break;
+
+    case 0x1d:     /* too much horizontal movement */
+      error = fpi_device_retry_new (FP_DEVICE_RETRY_CENTER_FINGER);
       break;
 
     case 0x1e:     /* swipe too short */
