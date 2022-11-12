@@ -1446,7 +1446,7 @@ verify_rd2800_cb (FpDevice *dev, enum read_msg_type msgtype,
       do_verify_stop (dev,
                       FPI_MATCH_ERROR,
                       fpi_device_error_new_msg (FP_DEVICE_ERROR_PROTO,
-                                                "Response hat wrong command sequence"));
+                                                "Response had wrong command sequence"));
       return;
     }
 
