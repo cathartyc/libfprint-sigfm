@@ -28,6 +28,8 @@ workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_PIPELINE_SOURCE == 'push'
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+    - if: $CI_PROJECT_NAMESPACE == 'libfprint' && $LIBFPRINT_CI_ACTION != ''
 
 stages:
   - image-build
