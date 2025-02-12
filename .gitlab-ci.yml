@@ -169,6 +169,12 @@ test_indent:
     - scripts/uncrustify.sh
     - git diff
     - git diff-index --name-only --exit-code HEAD
+  rules:
+    - changes:
+        compare_to: 'refs/heads/master'
+        paths:
+          - '**/*.c'
+          - '**/*.h'
 
 test_unsupported_list:
   stage: check-source
