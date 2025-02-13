@@ -738,9 +738,9 @@ imaging_run_state (FpiSsm *ssm, FpDevice *_dev)
 
     case IMAGING_DECODE:
       key  = self->last_reg_rd[0];
-      key |= self->last_reg_rd[1] << 8;
-      key |= self->last_reg_rd[2] << 16;
-      key |= self->last_reg_rd[3] << 24;
+      key |= (uint32_t) self->last_reg_rd[1] << 8;
+      key |= (uint32_t) self->last_reg_rd[2] << 16;
+      key |= (uint32_t) self->last_reg_rd[3] << 24;
       key ^= self->img_enc_seed;
 
       fp_dbg ("encryption id %02x -> key %08x", img->key_number, key);
