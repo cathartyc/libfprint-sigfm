@@ -107,7 +107,7 @@ reflect (uint32_t data, uint8_t n_bits)
        * If the LSB bit is set, set the reflection of it.
        */
       if (data & 0x01)
-        reflection |= (1 << ((n_bits - 1) - bit));
+        reflection |= (1LU << ((n_bits - 1) - bit));
 
       data = (data >> 1);
     }
