@@ -259,39 +259,44 @@ gx_proto_parse_header (FpiByteReader *reader,
 }
 
 static int
-gx_proto_parse_fingerid (const uint8_t    * fid_buffer,
-                         uint16_t           fid_buffer_size,
+gx_proto_parse_fingerid (FpiByteReader     *reader,
                          ptemplate_format_t template)
 {
-  const uint8_t * buffer = NULL;
-  uint16_t Offset = 0;
+  uint8_t byte;
+  const uint8_t *buffer;
 
-  if (!template || !fid_buffer)
+  if (!template)
     return -1;
 
-  if (fid_buffer_size < G_STRUCT_OFFSET (template_format_t, payload) + sizeof (uint32_t))
-    return -1;
+  if (!fpi_byte_reader_get_uint8 (reader, &byte) || byte != 67)
+    g_return_val_if_reached (-1);
 
-  buffer = fid_buffer;
-  Offset = 0;
+  if (!fpi_byte_reader_get_uint8 (reader, &template->type))
+    g_return_val_if_reached (-1);
 
-  if (buffer[Offset++] != 67)
-    return -1;
+  if (!fpi_byte_reader_get_uint8 (reader, &template->finger_index))
+    g_return_val_if_reached (-1);
 
-  template->type = buffer[Offset++];
-  template->finger_index = buffer[Offset++];
-  Offset++;
-  memcpy (template->accountid, &buffer[Offset], sizeof (template->accountid));
-  Offset += sizeof (template->accountid);
-  memcpy (template->tid, &buffer[Offset], sizeof (template->tid));
-  Offset += sizeof (template->tid);   // Offset == 68
-  template->payload.size = buffer[Offset++];
-  if (template->payload.size > sizeof (template->payload.data))
-    return -1;
-  if (template->payload.size + Offset > fid_buffer_size)
-    return -1;
-  memset (template->payload.data, 0, template->payload.size);
-  memcpy (template->payload.data, &buffer[Offset], template->payload.size);
+  if (!fpi_byte_reader_skip (reader, 1))
+    g_return_val_if_reached (-1);
+
+  if (!fpi_byte_reader_get_data (reader, sizeof (template->accountid), &buffer))
+    g_return_val_if_reached (-1);
+
+  memcpy (template->accountid, buffer, sizeof (template->accountid));
+
+  if (!fpi_byte_reader_get_data (reader, sizeof (template->tid), &buffer))
+    g_return_val_if_reached (-1);
+
+  memcpy (template->tid, buffer, sizeof (template->tid));
+
+  if (!fpi_byte_reader_get_uint8 (reader, &template->payload.size))
+    g_return_val_if_reached (-1);
+
+  if (!fpi_byte_reader_get_data (reader, template->payload.size, &buffer))
+    g_return_val_if_reached (-1);
+
+  memcpy (template->payload.data, buffer, template->payload.size);
 
   return 0;
 }
@@ -387,16 +392,15 @@ gx_proto_parse_body (uint16_t cmd, FpiByteReader *byte_reader, pgxfp_cmd_respons
       if (presp->check_duplicate_resp.duplicate)
         {
           uint16_t tid_size;
-          const uint8_t *tid_data;
+          FpiByteReader tid_reader;
 
           if (!fpi_byte_reader_get_uint16_le (byte_reader, &tid_size))
             g_return_val_if_reached (-1);
 
-          if (!fpi_byte_reader_get_data (byte_reader, tid_size, &tid_data))
+          if (!fpi_byte_reader_get_sub_reader (byte_reader, &tid_reader, tid_size))
             g_return_val_if_reached (-1);
 
-          if (gx_proto_parse_fingerid (tid_data, tid_size,
-                                       &presp->check_duplicate_resp.template) != 0)
+          if (gx_proto_parse_fingerid (&tid_reader, &presp->check_duplicate_resp.template) != 0)
             g_return_val_if_reached (-1);
         }
       break;
@@ -412,16 +416,16 @@ gx_proto_parse_body (uint16_t cmd, FpiByteReader *byte_reader, pgxfp_cmd_respons
       for(uint8_t num = 0; num < presp->finger_list_resp.finger_num; num++)
         {
           uint16_t fingerid_length;
-          const uint8_t *fingerid_data;
+          FpiByteReader fingerid_reader;
 
           if (!fpi_byte_reader_get_uint16_le (byte_reader, &fingerid_length))
             g_return_val_if_reached (-1);
 
-          if (!fpi_byte_reader_get_data (byte_reader, fingerid_length, &fingerid_data))
+          if (!fpi_byte_reader_get_sub_reader (byte_reader, &fingerid_reader,
+                                               fingerid_length))
             g_return_val_if_reached (-1);
 
-          if (gx_proto_parse_fingerid (fingerid_data,
-                                       fingerid_length,
+          if (gx_proto_parse_fingerid (&fingerid_reader,
                                        &presp->finger_list_resp.finger_list[num]) != 0)
             {
               g_warning ("Failed to parse finger list");
@@ -440,7 +444,7 @@ gx_proto_parse_body (uint16_t cmd, FpiByteReader *byte_reader, pgxfp_cmd_respons
 
         if (presp->verify.match)
           {
-            const uint8_t *finger_data;
+            FpiByteReader finger_reader;
 
             if (!fpi_byte_reader_get_uint16_le (byte_reader,
                                                 &presp->verify.rejectdetail))
@@ -455,11 +459,11 @@ gx_proto_parse_body (uint16_t cmd, FpiByteReader *byte_reader, pgxfp_cmd_respons
             if (!fpi_byte_reader_get_uint16_le (byte_reader, &fingerid_size))
               g_return_val_if_reached (-1);
 
-            if (!fpi_byte_reader_get_data (byte_reader, fingerid_size,
-                                           &finger_data))
+            if (!fpi_byte_reader_get_sub_reader (byte_reader, &finger_reader,
+                                                 fingerid_size))
               g_return_val_if_reached (-1);
 
-            if (gx_proto_parse_fingerid (finger_data, fingerid_size,
+            if (gx_proto_parse_fingerid (&finger_reader,
                                          &presp->verify.template) != 0)
               {
                 presp->result = GX_FAILED;
