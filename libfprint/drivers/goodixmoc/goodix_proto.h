@@ -234,9 +234,8 @@ int gx_proto_build_package (uint8_t       *ppackage,
                             const uint8_t *payload,
                             uint32_t       payload_size);
 
-int gx_proto_parse_header (uint8_t     *buffer,
-                           uint32_t     buffer_len,
-                           pack_header *pheader);
+int gx_proto_parse_header (FpiByteReader *reader,
+                           pack_header   *pheader);
 
 int gx_proto_parse_body (uint16_t             cmd,
                          FpiByteReader       *byte_reader,

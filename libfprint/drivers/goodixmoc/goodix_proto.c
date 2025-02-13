@@ -226,21 +226,35 @@ gx_proto_build_package (uint8_t       *ppackage,
 
 
 int
-gx_proto_parse_header (
-  uint8_t     *buffer,
-  uint32_t     buffer_len,
-  pack_header *pheader)
+gx_proto_parse_header (FpiByteReader *reader,
+                       pack_header   *pheader)
 {
-  if (!buffer || !pheader)
-    return -1;
-  if (buffer_len < PACKAGE_HEADER_SIZE + PACKAGE_CRC_SIZE)
+  if (!pheader)
     return -1;
 
-  memcpy (pheader, buffer, sizeof (pack_header));
-  pheader->len = GUINT16_FROM_LE (pheader->len);
-  if (buffer_len < pheader->len + PACKAGE_HEADER_SIZE)
-    return -1;
+  if (!fpi_byte_reader_get_uint8 (reader, &pheader->cmd0))
+    g_return_val_if_reached (-1);
+
+  if (!fpi_byte_reader_get_uint8 (reader, &pheader->cmd1))
+    g_return_val_if_reached (-1);
+
+  if (!fpi_byte_reader_get_uint8 (reader, &pheader->packagenum))
+    g_return_val_if_reached (-1);
+
+  if (!fpi_byte_reader_get_uint8 (reader, &pheader->reserved))
+    g_return_val_if_reached (-1);
+
+  if (!fpi_byte_reader_get_uint16_le (reader, &pheader->len))
+    g_return_val_if_reached (-1);
+
+  if (!fpi_byte_reader_get_uint8 (reader, &pheader->crc8))
+    g_return_val_if_reached (-1);
+
+  if (!fpi_byte_reader_get_uint8 (reader, &pheader->rev_crc8))
+    g_return_val_if_reached (-1);
+
   pheader->len -= PACKAGE_CRC_SIZE;
+
   return 0;
 }
 

@@ -130,7 +130,7 @@ fp_cmd_receive_cb (FpiUsbTransfer *transfer,
   FpiDeviceGoodixMoc *self = FPI_DEVICE_GOODIXMOC (device);
   FpiByteReader reader = {0};
   CommandData *data = user_data;
-  int ret = -1, ssm_state = 0;
+  int ssm_state = 0;
   gxfp_cmd_response_t cmd_reponse = {0, };
   pack_header header;
   guint32 crc32_calc = 0;
@@ -156,8 +156,10 @@ fp_cmd_receive_cb (FpiUsbTransfer *transfer,
       return;
     }
 
-  ret = gx_proto_parse_header (transfer->buffer, transfer->actual_length, &header);
-  if (ret != 0)
+  reader.data = transfer->buffer;
+  reader.size = transfer->actual_length;
+
+  if (gx_proto_parse_header (&reader, &header) != 0)
     {
       fpi_ssm_mark_failed (transfer->ssm,
                            fpi_device_error_new_msg (FP_DEVICE_ERROR_PROTO,
@@ -165,8 +167,6 @@ fp_cmd_receive_cb (FpiUsbTransfer *transfer,
       return;
     }
 
-  reader.data = transfer->buffer;
-  reader.size = transfer->actual_length;
   if (!fpi_byte_reader_set_pos (&reader, PACKAGE_HEADER_SIZE + header.len))
     {
       fpi_ssm_mark_failed (transfer->ssm,
