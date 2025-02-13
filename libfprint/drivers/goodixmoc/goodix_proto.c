@@ -211,7 +211,11 @@ gx_proto_build_package (uint8_t       *ppackage,
   init_pack_header (&header, payload_size, cmd, 0);
 
   memcpy (ppackage, &header, PACKAGE_HEADER_SIZE);
-  memcpy (ppackage + PACKAGE_HEADER_SIZE, payload, payload_size);
+
+  if (payload)
+    memcpy (ppackage + PACKAGE_HEADER_SIZE, payload, payload_size);
+  else
+    ppackage[PACKAGE_HEADER_SIZE] = 0;
 
   gx_proto_crc32_calc (ppackage, PACKAGE_HEADER_SIZE + payload_size, ppackage + PACKAGE_HEADER_SIZE + payload_size);
 
