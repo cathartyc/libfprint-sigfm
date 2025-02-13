@@ -22,7 +22,6 @@
 #define FP_COMPONENT "goodixmoc"
 
 #include "drivers_api.h"
-#include "fpi-byte-reader.h"
 
 #include "goodix_proto.h"
 #include "goodix.h"
@@ -188,8 +187,11 @@ fp_cmd_receive_cb (FpiUsbTransfer *transfer,
 
   cmd = MAKE_CMD_EX (header.cmd0, header.cmd1);
 
-  ret = gx_proto_parse_body (cmd, &transfer->buffer[PACKAGE_HEADER_SIZE], header.len, &cmd_reponse);
-  if (ret != 0)
+  fpi_byte_reader_set_pos (&reader, 0);
+  reader.data = &transfer->buffer[PACKAGE_HEADER_SIZE];
+  reader.size = header.len;
+
+  if (gx_proto_parse_body (cmd, &reader, &cmd_reponse) != 0)
     {
       fpi_ssm_mark_failed (transfer->ssm,
                            fpi_device_error_new_msg (FP_DEVICE_ERROR_PROTO,
