@@ -191,12 +191,12 @@ on_listener_connected (FpiDeviceVirtualListener *listener,
 
   switch (state)
     {
-    case FPI_IMAGE_DEVICE_STATE_IDLE:
     case FPI_IMAGE_DEVICE_STATE_AWAIT_FINGER_ON:
     case FPI_IMAGE_DEVICE_STATE_CAPTURE:
-    case FPI_IMAGE_DEVICE_STATE_AWAIT_FINGER_OFF:
       recv_image (self);
 
+    case FPI_IMAGE_DEVICE_STATE_IDLE:
+    case FPI_IMAGE_DEVICE_STATE_AWAIT_FINGER_OFF:
     case FPI_IMAGE_DEVICE_STATE_INACTIVE:
     case FPI_IMAGE_DEVICE_STATE_ACTIVATING:
     case FPI_IMAGE_DEVICE_STATE_DEACTIVATING:
