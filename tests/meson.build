@@ -382,7 +382,7 @@ if valgrind.found() and libfprint_sanitizers.length() == 0
         '--suppressions=' + python_suppressions,
     ]
     add_test_setup('valgrind',
-        timeout_multiplier: 15,
+        timeout_multiplier: 20,
         exe_wrapper: libfprint_wrapper,
         env: [
             'G_SLICE=always-malloc',
