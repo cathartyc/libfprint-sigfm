@@ -375,6 +375,8 @@ if valgrind.found()
         env: [
             'G_SLICE=always-malloc',
             'UNDER_VALGRIND=1',
+            'FP_VIRTUAL_IMAGE_HOT_SECONDS=-1',
+            'FP_VIRTUAL_DEVICE_HOT_SECONDS=-1',
             'LIBFPRINT_TEST_WRAPPER=' + ' '.join(libfprint_wrapper),
         ])
 endif
