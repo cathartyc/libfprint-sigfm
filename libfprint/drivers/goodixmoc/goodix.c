@@ -22,6 +22,7 @@
 #define FP_COMPONENT "goodixmoc"
 
 #include "drivers_api.h"
+#include "fpi-byte-reader.h"
 
 #include "goodix_proto.h"
 #include "goodix.h"
@@ -128,11 +129,13 @@ fp_cmd_receive_cb (FpiUsbTransfer *transfer,
                    GError         *error)
 {
   FpiDeviceGoodixMoc *self = FPI_DEVICE_GOODIXMOC (device);
+  FpiByteReader reader = {0};
   CommandData *data = user_data;
   int ret = -1, ssm_state = 0;
   gxfp_cmd_response_t cmd_reponse = {0, };
   pack_header header;
   guint32 crc32_calc = 0;
+  guint32 crc32 = 0;
   guint16 cmd = 0;
 
   if (error)
@@ -163,8 +166,19 @@ fp_cmd_receive_cb (FpiUsbTransfer *transfer,
       return;
     }
 
+  reader.data = transfer->buffer;
+  reader.size = transfer->actual_length;
+  if (!fpi_byte_reader_set_pos (&reader, PACKAGE_HEADER_SIZE + header.len))
+    {
+      fpi_ssm_mark_failed (transfer->ssm,
+                           fpi_device_error_new_msg (FP_DEVICE_ERROR_PROTO,
+                                                     "Package crc read failed"));
+    }
+
   gx_proto_crc32_calc (transfer->buffer, PACKAGE_HEADER_SIZE + header.len, (uint8_t *) &crc32_calc);
-  if(crc32_calc != GUINT32_FROM_LE (*(uint32_t *) (transfer->buffer + PACKAGE_HEADER_SIZE + header.len)))
+
+  if (!fpi_byte_reader_get_uint32_le (&reader, &crc32) ||
+      crc32_calc != crc32)
     {
       fpi_ssm_mark_failed (transfer->ssm,
                            fpi_device_error_new_msg (FP_DEVICE_ERROR_PROTO,
