@@ -17,8 +17,10 @@
     gtk-doc
     gtk3-devel
     libabigail
+    libasan
     libgusb-devel
     libgudev-devel
+    libubsan
     libX11-devel
     libXv-devel
     meson

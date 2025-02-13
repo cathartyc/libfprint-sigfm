@@ -122,6 +122,23 @@ test_valgrind:
       - _build/meson-logs/testlog-valgrind.txt
     expire_in: 1 week
 
+test_asan:
+  stage: test
+  extends:
+    - .standard_job
+  script:
+    - meson setup _build -Ddrivers=all -Db_sanitize=address,undefined
+    - meson test -C _build --print-errorlogs --no-stdsplit
+  artifacts:
+    reports:
+      junit: "_build/meson-logs/testlog.junit.xml"
+    expose_as: 'Sanitizers test logs'
+    when: always
+    paths:
+      - _build/meson-logs
+      - _build/meson-logs/testlog.txt
+    expire_in: 1 week
+
 test_installed:
   stage: test
   extends:
