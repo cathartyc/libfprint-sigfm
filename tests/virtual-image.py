@@ -146,6 +146,9 @@ class VirtualImage(unittest.TestCase):
             nonlocal done
             done = True
 
+        if 'UNDER_VALGRIND' in os.environ:
+            timeout = timeout * 3
+
         source = GLib.timeout_add(timeout, on_timeout_reached)
         while not done:
             if self.dev.get_finger_status() & finger_status:
