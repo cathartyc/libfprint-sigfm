@@ -332,7 +332,7 @@ test('udev-hwdb',
      env: envs)
 
 gdb = find_program('gdb', required: false)
-if gdb.found()
+if gdb.found() and libfprint_sanitizers.length() == 0
     libfprint_wrapper = [
         gdb.full_path(),
         '-batch',
@@ -347,8 +347,19 @@ if gdb.found()
         ])
 endif
 
+if ('address' in libfprint_sanitizers or
+    'undefined' in libfprint_sanitizers or
+    'leak' in libfprint_sanitizers)
+    add_test_setup('sanitizers',
+        is_default: true,
+        timeout_multiplier: 3,
+        env: [
+            'ASAN_OPTIONS=verify_asan_link_order=0',
+        ])
+endif
+
 valgrind = find_program('valgrind', required: false)
-if valgrind.found()
+if valgrind.found() and libfprint_sanitizers.length() == 0
     glib_share = glib_dep.get_variable(pkgconfig: 'prefix') / 'share' / glib_dep.name()
     glib_suppressions = glib_share + '/valgrind/glib.supp'
     libfprint_suppressions = '@0@/@1@'.format(meson.project_source_root(),

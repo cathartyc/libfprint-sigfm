@@ -21,6 +21,12 @@ datadir = prefix / get_option('datadir')
 cc = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')
 host_system = host_machine.system()
+
+libfprint_sanitizers = get_option('b_sanitize').split(',')
+if libfprint_sanitizers == ['none']
+  libfprint_sanitizers = []
+endif
+
 glib_min_version = '2.68'
 
 glib_version_def = 'GLIB_VERSION_@0@_@1@'.format(
