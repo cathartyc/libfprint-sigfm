@@ -3,6 +3,7 @@
 
 .libfprint_common_variables:
   LIBFPRINT_DEPENDENCIES:
+    appstream
     doxygen
     dnf-plugins-core
     flatpak-builder
