@@ -327,6 +327,21 @@ udev_hwdb_generator = custom_target('udev-hwdb',
     install: false,
 )
 
+metainfo = executable('fprint-list-metainfo',
+    'fprint-list-metainfo.c',
+    dependencies: libfprint_private_dep,
+    link_with: libfprint_drivers,
+    install: false)
+
+metainfo_generator = custom_target('metainfo',
+    output: 'org.freedesktop.libfprint.metainfo.xml',
+    depend_files: drivers_sources,
+    capture: true,
+    command: [ metainfo ],
+    install: true,
+    install_dir: datadir / 'metainfo'
+)
+
 if install_udev_rules
     udev_rules = executable('fprint-list-udev-rules',
         'fprint-list-udev-rules.c',
