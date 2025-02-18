@@ -331,6 +331,15 @@ test('udev-hwdb',
      depends: udev_hwdb,
      env: envs)
 
+appstreamcli = find_program('appstreamcli', required: false)
+if appstreamcli.found()
+    test('metainfo-validate',
+        appstreamcli,
+        args: ['validate', metainfo_generator],
+        depends: metainfo_generator,
+    )
+endif
+
 gdb = find_program('gdb', required: false)
 if gdb.found() and libfprint_sanitizers.length() == 0
     libfprint_wrapper = [
