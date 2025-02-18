@@ -329,6 +329,7 @@ envs.set('G_MESSAGES_DEBUG', '')
 test('udev-hwdb',
      find_program('test-generated-hwdb.sh'),
      depends: udev_hwdb,
+     suite: ['data', 'no-valgrind'],
      env: envs)
 
 appstreamcli = find_program('appstreamcli', required: false)
@@ -337,6 +338,7 @@ if appstreamcli.found()
         appstreamcli,
         args: ['validate', metainfo_generator],
         depends: metainfo_generator,
+        suite: ['data', 'no-valgrind'],
     )
 endif
 
@@ -393,6 +395,7 @@ if valgrind.found() and libfprint_sanitizers.length() == 0
     add_test_setup('valgrind',
         timeout_multiplier: 20,
         exe_wrapper: libfprint_wrapper,
+        exclude_suites: ['no-valgrind'],
         env: [
             'G_SLICE=always-malloc',
             'UNDER_VALGRIND=1',
