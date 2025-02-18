@@ -196,8 +196,9 @@ struct read_msg_data
 static void __read_msg_async (FpDevice             *dev,
                               struct read_msg_data *udata);
 
-#define READ_MSG_DATA_CB_ERR(dev, udata, error) (udata)->callback (dev, \
-                                                                   READ_MSG_CMD, 0, 0, NULL, 0, (udata)->user_data, error)
+#define READ_MSG_DATA_CB_ERR(dev, udata, error) \
+  (udata)->callback (dev, \
+                     READ_MSG_CMD, 0, 0, NULL, 0, (udata)->user_data, error)
 
 static void
 busy_ack_sent_cb (FpiUsbTransfer *transfer, FpDevice *device,
