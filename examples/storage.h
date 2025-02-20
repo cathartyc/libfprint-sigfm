@@ -29,7 +29,8 @@ int print_data_save (FpPrint *print,
 FpPrint * print_data_load (FpDevice *dev,
                            FpFinger  finger);
 GPtrArray * gallery_data_load (FpDevice *dev);
-gboolean clear_saved_prints (GError **error);
+gboolean clear_saved_prints (FpDevice *dev,
+                             GError  **error);
 FpPrint * print_create_template (FpDevice      *dev,
                                  FpFinger       finger,
                                  const gboolean load_existing);

@@ -56,6 +56,18 @@ get_print_data_descriptor (FpPrint *print, FpDevice *dev, FpFinger finger)
                           finger);
 }
 
+static char *
+get_print_prefix_for_device (FpDevice *dev)
+{
+  const char *driver;
+  const char *dev_id;
+
+  driver = fp_device_get_driver (dev);
+  dev_id = fp_device_get_device_id (dev);
+
+  return g_strdup_printf ("%s/%s/", driver, dev_id);
+}
+
 static GVariantDict *
 load_data (void)
 {
@@ -170,8 +182,6 @@ gallery_data_load (FpDevice *dev)
   g_autoptr(GVariant) dict_variant = NULL;
   g_autofree char *dev_prefix = NULL;
   GPtrArray *gallery;
-  const char *driver;
-  const char *dev_id;
   GVariantIter iter;
   GVariant *value;
   gchar *key;
@@ -179,9 +189,7 @@ gallery_data_load (FpDevice *dev)
   gallery = g_ptr_array_new_with_free_func (g_object_unref);
   dict = load_data ();
   dict_variant = g_variant_dict_end (dict);
-  driver = fp_device_get_driver (dev);
-  dev_id = fp_device_get_device_id (dev);
-  dev_prefix = g_strdup_printf ("%s/%s/", driver, dev_id);
+  dev_prefix = get_print_prefix_for_device (dev);
 
   g_variant_iter_init (&iter, dict_variant);
   while (g_variant_iter_loop (&iter, "{sv}", &key, &value))
@@ -210,21 +218,50 @@ gallery_data_load (FpDevice *dev)
 }
 
 gboolean
-clear_saved_prints (GError **error)
+clear_saved_prints (FpDevice *dev,
+                    GError  **error)
 {
-  if (g_remove (STORAGE_FILE) < 0)
+  g_autoptr(GVariantDict) dict = NULL;
+  g_autoptr(GVariantDict) updated_dict = NULL;
+  g_autoptr(GVariant) dict_variant = NULL;
+  g_autofree char *dev_prefix = NULL;
+  GPtrArray *print_keys;
+  GVariantIter iter;
+  GVariant *value;
+  gchar *key;
+
+  print_keys = g_ptr_array_new_with_free_func (g_free);
+  dict = load_data ();
+  dict_variant = g_variant_dict_end (dict);
+  dev_prefix = get_print_prefix_for_device (dev);
+
+  g_variant_iter_init (&iter, dict_variant);
+  while (g_variant_iter_loop (&iter, "{sv}", &key, &value))
     {
-      int errsv = errno;
+      if (!g_str_has_prefix (key, dev_prefix))
+        continue;
 
-      g_set_error (error,
-                   G_IO_ERROR,
-                   g_io_error_from_errno (errsv),
-                   "Error clearing storage file “%s”: %s",
-                   STORAGE_FILE,
-                   g_strerror (errsv));
-
-      return FALSE;
+      g_ptr_array_add (print_keys, g_strdup (key));
     }
+
+  if (!print_keys->len)
+    return TRUE;
+
+  updated_dict = load_data ();
+
+  for (guint i = 0; i < print_keys->len; ++i)
+    {
+      key = g_ptr_array_index (print_keys, i);
+      if (!g_variant_dict_remove (updated_dict, key))
+        {
+          g_warning ("Print '%s' key not found!", key);
+          continue;
+        }
+
+      g_debug ("Dropping print '%s' from gallery", key);
+    }
+
+  save_data (g_variant_dict_end (updated_dict));
 
   return TRUE;
 }

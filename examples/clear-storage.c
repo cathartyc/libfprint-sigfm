@@ -87,7 +87,7 @@ on_clear_storage_completed (FpDevice *dev, GAsyncResult *res, void *user_data)
     }
   else
     {
-      if (!clear_saved_prints (&error))
+      if (!clear_saved_prints (dev, &error))
         {
           g_warning ("Clear saved prints from local storage failed: %s",
                      error->message);
