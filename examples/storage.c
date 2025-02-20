@@ -209,10 +209,24 @@ gallery_data_load (FpDevice *dev)
   return gallery;
 }
 
-int
-clear_saved_prints (void)
+gboolean
+clear_saved_prints (GError **error)
 {
-  return g_remove (STORAGE_FILE);
+  if (g_remove (STORAGE_FILE) < 0)
+    {
+      int errsv = errno;
+
+      g_set_error (error,
+                   G_IO_ERROR,
+                   g_io_error_from_errno (errsv),
+                   "Error clearing storage file “%s”: %s",
+                   STORAGE_FILE,
+                   g_strerror (errsv));
+
+      return FALSE;
+    }
+
+  return TRUE;
 }
 
 FpPrint *

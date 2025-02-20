@@ -87,10 +87,10 @@ on_clear_storage_completed (FpDevice *dev, GAsyncResult *res, void *user_data)
     }
   else
     {
-      int r = clear_saved_prints ();
-      if (r < 0)
+      if (!clear_saved_prints (&error))
         {
-          g_warning ("Clear saved prints from local storage failed, code %d", r);
+          g_warning ("Clear saved prints from local storage failed: %s",
+                     error->message);
           clear_storage_data->ret_value = EXIT_FAILURE;
         }
       else
@@ -110,9 +110,11 @@ start_clear_storage (FpDevice *dev, ClearStorageData *clear_storage_data)
 
   g_print ("Clear device storage? [Y/n]? ");
   if (fgets (buffer, sizeof (buffer), stdin) &&
-      (buffer[0] == 'Y' || buffer[0] == 'y' || buffer[0] == '\n'))
+      (buffer[0] == 'Y' || buffer[0] == 'y'))
     {
-      fp_device_clear_storage (dev, clear_storage_data->cancellable, (GAsyncReadyCallback) on_clear_storage_completed, clear_storage_data);
+      fp_device_clear_storage (dev, clear_storage_data->cancellable,
+                               (GAsyncReadyCallback) on_clear_storage_completed,
+                               clear_storage_data);
       return;
     }
 
