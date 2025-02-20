@@ -21,6 +21,7 @@
 
 #define FP_COMPONENT "example-clear-storage"
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <libfprint/fprint.h>
 #include <glib-unix.h>
@@ -80,12 +81,7 @@ on_clear_storage_completed (FpDevice *dev, GAsyncResult *res, void *user_data)
   g_autoptr(GError) error = NULL;
   ClearStorageData *clear_storage_data = user_data;
 
-  if (!fp_device_clear_storage_finish (dev, res, &error))
-    {
-      g_warning ("Failed to clear storage: %s", error->message);
-      clear_storage_data->ret_value = EXIT_FAILURE;
-    }
-  else
+  if (fp_device_clear_storage_finish (dev, res, &error))
     {
       if (!clear_saved_prints (dev, &error))
         {
@@ -98,6 +94,23 @@ on_clear_storage_completed (FpDevice *dev, GAsyncResult *res, void *user_data)
           g_print ("Clear storage successful!\n");
           clear_storage_data->ret_value = EXIT_SUCCESS;
         }
+
+      clear_storage_quit (dev, clear_storage_data);
+      return;
+    }
+
+  g_warning ("Failed to clear storage: %s", error->message);
+  clear_storage_data->ret_value = EXIT_FAILURE;
+
+  if (g_error_matches (error, FP_DEVICE_ERROR, FP_DEVICE_ERROR_NOT_SUPPORTED))
+    {
+      g_autoptr(GError) clear_error = NULL;
+
+      if (clear_saved_prints (dev, &clear_error))
+        clear_storage_data->ret_value = EXIT_SUCCESS;
+      else
+        g_warning ("Clear saved prints from local storage failed: %s",
+                   clear_error->message);
     }
 
   clear_storage_quit (dev, clear_storage_data);
