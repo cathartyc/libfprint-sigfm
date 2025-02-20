@@ -6,8 +6,9 @@ project('libfprint', [ 'c', 'cpp' ],
         'warning_level=1',
         'c_std=gnu99',
     ],
-    meson_version: '>= 0.57.0')
+    meson_version: '>= 0.59.0')
 
+fs = import('fs')
 gnome = import('gnome')
 
 libfprint_conf = configuration_data()

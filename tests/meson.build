@@ -145,8 +145,7 @@ if get_option('introspection')
                     output: vdtest + '.test',
                     install_dir: installed_tests_testdir,
                     configuration: {
-                        # FIXME: use fs.name() on meson 0.58
-                        'exec': installed_tests_execdir / '@0@'.format(base_args[0]).split('/')[-1],
+                        'exec': installed_tests_execdir / fs.name(base_args[0]),
                         'env': ' '.join([
                             envs_str,
                             'LD_LIBRARY_PATH=' + installed_tests_libdir,
