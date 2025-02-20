@@ -274,8 +274,13 @@ libfprint_drivers = static_library('fprint-drivers',
     link_with: libfprint_private,
     install: false)
 
-mapfile = files('libfprint.ver')
-vflag = '-Wl,--version-script,@0@/@1@'.format(meson.project_source_root(), mapfile[0])
+mapfile = files('libfprint.ver')[0]
+if meson.version().version_compare('>=1.4')
+    mapfile_path = mapfile.full_path()
+else
+    mapfile_path = meson.project_source_root() / '@0@'.format(mapfile)
+endif
+vflag = '-Wl,--version-script,@0@'.format(mapfile_path)
 
 libfprint = shared_library(versioned_libname.split('lib')[1],
     sources: [

@@ -32,7 +32,6 @@ glib_min_version = '2.68'
 glib_version_def = 'GLIB_VERSION_@0@_@1@'.format(
     glib_min_version.split('.')[0], glib_min_version.split('.')[1])
 common_cflags = cc.get_supported_arguments([
-    '-Wall',
     '-Wcast-align',
     '-Wformat-nonliteral',
     '-Wformat-security',
