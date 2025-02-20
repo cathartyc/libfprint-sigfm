@@ -114,7 +114,7 @@ typedef enum {
  *   pressure problems; the user should remove their finger from the scanner
  *   before retrying.
  * @FP_DEVICE_RETRY_TOO_FAST: The scan did not succeed because the finger
- *   swipe was too fast.
+ *   swipe or touch was too fast.
  *
  * Error codes representing scan failures resulting in the user needing to
  * retry.
