@@ -1,4 +1,16 @@
+## Fork details
 
+This is a fork of
+[libfprint](https://gitlab.freedesktop.org/libfprint/libfprint) with the [sigfm
+MR](https://gitlab.freedesktop.org/libfprint/libfprint/-/merge_requests/418)
+applied and updated to the last version. Once (and if) the MR will be merged
+upstream, I will remove this.
+
+> [!WARNING]
+> There is (yet) no study and/or statistic evidence supporting this
+> implementation, so **use it at your own risk!**
+
+***
 
 <div align="center">
 
