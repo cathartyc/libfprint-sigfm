@@ -43,5 +43,8 @@
       glibc \
       libgusb \
       libusb \
+<<<<<<< HEAD
       openssl \
-      pixman
+      pixman \
+      opencv-devel \
+      doctest-devel
